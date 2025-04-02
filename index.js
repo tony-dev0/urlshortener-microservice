@@ -37,29 +37,30 @@ app.get("/api/hello", function (req, res, next) {
   res.status(200).json({ message: "hello world" });
 });
 
-app.post("/api/shorturl", async function (req, res) {
+app.post("/api/shorturl", function (req, res) {
   const { url } = req.body;
-  const hostname = url.replace("https://", "");
+  const urlObject = new URL(url);
+  const hostname = urlObject.hostname;
 
-  dns.lookup(hostname, function (error) {
+  dns.lookup(hostname, async function (error, address, family) {
     if (error) {
-      return res.json({ error: 'invalid url' });
+      return res.json({ error: "invalid url" });
     }
-  });
-  try {
-    const shortid = await ShortUrl.findOne({ url: url });
-    if (!shortid) {
-      const xc = await ShortUrl.create({ url: url });
+    try {
+      const shortid = await ShortUrl.findOne({ url: url });
+      if (!shortid) {
+        const xc = await ShortUrl.create({ url: url });
+        return res
+          .status(200)
+          .json({ original_url: url, short_url: xc.shorturl });
+      }
       return res
         .status(200)
-        .json({ original_url: url, short_url: xc.shorturl });
+        .json({ original_url: url, short_url: shortid.shorturl });
+    } catch (err) {
+      console.log(err);
     }
-    return res
-      .status(200)
-      .json({ original_url: url, short_url: shortid.shorturl });
-  } catch (err) {
-    console.log(err);
-  }
+  });
 });
 
 app.get("/api/shorturl", async function (req, res) {

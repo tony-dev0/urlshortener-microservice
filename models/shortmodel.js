@@ -8,7 +8,7 @@ const shortUrlSchema = new mongoose.Schema({
   shorturl: {
     type: String,
     required: true,
-    default: () => shortId.generate(),
+    default: () => Math.floor(Math.random() * 1000),
   },
 });
 
