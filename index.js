@@ -38,8 +38,8 @@ app.get("/api/hello", function (req, res, next) {
 });
 
 app.post("/api/shorturl", async function (req, res) {
-  const { url_input } = req.body;
-  const hostname = url_input.replace("https://", "");
+  const { url } = req.body;
+  const hostname = url.replace("https://", "");
 
   dns.lookup(hostname, function (error) {
     if (error) {
@@ -47,16 +47,16 @@ app.post("/api/shorturl", async function (req, res) {
     }
   });
   try {
-    const shortid = await ShortUrl.findOne({ url: url_input });
+    const shortid = await ShortUrl.findOne({ url: url });
     if (!shortid) {
-      const xc = await ShortUrl.create({ url: url_input });
+      const xc = await ShortUrl.create({ url: url });
       return res
         .status(200)
-        .json({ original_url: url_input, short_url: xc.shorturl });
+        .json({ original_url: url, short_url: xc.shorturl });
     }
     return res
       .status(200)
-      .json({ original_url: url_input, short_url: shortid.shorturl });
+      .json({ original_url: url, short_url: shortid.shorturl });
   } catch (err) {
     console.log(err);
   }
